@@ -8,24 +8,30 @@ import {
 import { orderedDither } from "@thi.ng/pixel-dither";
 import { useEffect, useMemo, useRef } from "react";
 
-import { npubEncode } from "nostr-tools/nip19";
 import styles from "./Nameplate.module.css";
 
-import { NostrProfile } from "./nostr";
+import { fetchNostrProfile } from "./nostr";
+import { npubEncode } from "nostr-tools/nip19";
 
-type NameplateProps = NostrProfile & {
+type NameplateProps = {
+  pubkey: string;
   gamma: number;
 };
 
-export function Nameplate({
-  pictureUrl,
-  displayName,
-  nip05,
-  pubkey,
-  gamma,
-}: NameplateProps) {
-  const npub = npubEncode(pubkey);
+export function Nameplate({ pubkey, gamma }: NameplateProps) {
+  const { data: profile, error } = useQuery({
+    queryKey: ["nostr-profile", pubkey],
+    queryFn: async () => fetchNostrProfile(pubkey),
+  });
+  if (error !== null) {
+    console.error(error.message);
+  }
+  if (profile === undefined) {
+    return <NameplateFallback />;
+  }
 
+  const { displayName, pictureUrl, nip05 } = profile;
+  const npub = npubEncode(pubkey);
   return (
     <div className={styles.nameplate}>
       <NameplatePicture {...{ pictureUrl, gamma }} />
@@ -40,10 +46,12 @@ export function Nameplate({
   );
 }
 
-function NameplatePicture({
-  pictureUrl,
-  gamma,
-}: Pick<NameplateProps, "pictureUrl" | "gamma">) {
+type NameplacePictureProps = {
+  pictureUrl: string;
+  gamma: number;
+};
+
+function NameplatePicture({ pictureUrl, gamma }: NameplacePictureProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { data: grayPictureBuf, isError } = useQuery({
     queryKey: ["picture", pictureUrl],
@@ -115,4 +123,8 @@ function drawImageDataToCanvas(canvas: HTMLCanvasElement, imgData: ImageData) {
   canvas.width = imgData.width;
   canvas.height = imgData.height;
   canvas.getContext("2d")?.putImageData(imgData, 0, 0);
+}
+
+function NameplateFallback() {
+  return <div style={{ height: "256px" }}>Now Loading...</div>;
 }

@@ -1,0 +1,17 @@
+.gammaSlider {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 8px;
+}
+
+.range {
+  display: inline-block;
+  width: 300px;
+}
+
+@media print {
+  .gammaSlider {
+    display: none;
+  }
+}
