@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import {
   GRAY8,
   imageFromURL,
@@ -34,7 +34,7 @@ export function Nameplate({ pubkey, gamma }: NameplateProps) {
   const npub = npubEncode(pubkey);
   return (
     <div className={styles.nameplate}>
-      <NameplatePicture {...{ pictureUrl, gamma }} />
+      <NameplatePicture {...{ pictureUrl, pubkey, gamma }} />
       <div className={styles.profile}>
         <div className={styles.names}>
           <p className={styles.displayName}>{displayName}</p>
@@ -47,25 +47,29 @@ export function Nameplate({ pubkey, gamma }: NameplateProps) {
 }
 
 type NameplacePictureProps = {
-  pictureUrl: string;
+  pictureUrl?: string;
+  pubkey: string;
   gamma: number;
 };
 
-function NameplatePicture({ pictureUrl, gamma }: NameplacePictureProps) {
+function NameplatePicture({
+  pictureUrl,
+  pubkey,
+  gamma,
+}: NameplacePictureProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { data: grayPictureBuf, isError } = useQuery({
-    queryKey: ["picture", pictureUrl],
-    queryFn: () => {
-      return gray8ImageBufferFromURL(pictureUrl);
-    },
-    retry: 0,
-  });
+
+  const { data: grayPictureBuf, isError } = useProfilePicture(
+    pictureUrl
+      ? { type: "url", value: pictureUrl }
+      : { type: "pubkey", value: pubkey },
+  );
+
   const ditheredImgData = useMemo(() => {
     if (grayPictureBuf === undefined) {
       return undefined;
     }
     const gammaAdjusted = adjustGammaOfGRAY8Img(grayPictureBuf, gamma);
-    // return ditherWith(ATKINSON, gammaAdjusted).toImageData();
     return orderedDither(gammaAdjusted, 4, 2).toImageData();
   }, [grayPictureBuf, gamma]);
 
@@ -83,6 +87,32 @@ function NameplatePicture({ pictureUrl, gamma }: NameplacePictureProps) {
   );
 
   return <div className={styles.pictureContainer}>{pic}</div>;
+}
+
+type PictureUrlOrPubkey = {
+  type: "url" | "pubkey";
+  value: string;
+};
+
+function useProfilePicture(
+  urlOrPubkey: PictureUrlOrPubkey,
+): UseQueryResult<IntBuffer> {
+  const pictureUrl = (() => {
+    switch (urlOrPubkey.type) {
+      case "url":
+        return urlOrPubkey.value;
+      case "pubkey": // use robohash set4 (kittens)
+        return `https://robohash.org/${npubEncode(urlOrPubkey.value)}?set=set4&size=256x256`;
+    }
+  })();
+
+  return useQuery({
+    queryKey: ["picture", pictureUrl],
+    queryFn: () => {
+      return gray8ImageBufferFromURL(pictureUrl);
+    },
+    retry: 0,
+  });
 }
 
 function adjustGammaOfGRAY8Img(img: IntBuffer, gamma: number): IntBuffer {
