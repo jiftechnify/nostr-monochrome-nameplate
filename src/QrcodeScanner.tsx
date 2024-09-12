@@ -7,6 +7,8 @@ import {
 import React, { useRef } from "react";
 import { useEffect } from "react";
 
+import styles from "./QrcodeScanner.module.css";
+
 const qrcodeRegionId = "html5qr-code-full-region";
 
 type QrcodeScannerProps = Html5QrcodeCameraScanConfig & {
@@ -52,7 +54,7 @@ function QrcodeScannerBody(props: QrcodeScannerProps) {
     };
   }, [props]);
 
-  return <div id={qrcodeRegionId} />;
+  return <div className={styles.qrcodeScanner} id={qrcodeRegionId} />;
 }
 
 export const QrcodeScanner = React.memo(QrcodeScannerBody);

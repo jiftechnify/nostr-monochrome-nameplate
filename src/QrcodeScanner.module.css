@@ -1,0 +1,4 @@
+.qrcodeScanner video {
+  display: inline-block;
+  max-height: calc(100vh - 4em);
+}
