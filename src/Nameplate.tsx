@@ -99,8 +99,11 @@ function useProfilePicture(
 ): UseQueryResult<IntBuffer> {
   const pictureUrl = (() => {
     switch (urlOrPubkey.type) {
-      case "url":
-        return urlOrPubkey.value;
+      case "url": {
+        const proxyUrl = new URL(import.meta.env.VITE_PROFILE_IMG_PROXY_URL);
+        proxyUrl.searchParams.set("u", urlOrPubkey.value);
+        return proxyUrl.toString();
+      }
       case "pubkey": // use robohash set4 (kittens)
         return `https://robohash.org/${npubEncode(urlOrPubkey.value)}?set=set4&size=256x256`;
     }
