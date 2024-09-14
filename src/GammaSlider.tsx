@@ -14,7 +14,7 @@ export function GammaSlider({ onChange }: GammaSliderProps) {
 
   return (
     <div className={styles.gammaSlider}>
-      <span>淡</span>
+      <span>🌔</span>
       <input
         className={styles.range}
         type="range"
@@ -24,7 +24,7 @@ export function GammaSlider({ onChange }: GammaSliderProps) {
         defaultValue={0.0}
         onChange={handleChangeRange}
       ></input>
-      <span>濃</span>
+      <span>🌒</span>
     </div>
   );
 }
