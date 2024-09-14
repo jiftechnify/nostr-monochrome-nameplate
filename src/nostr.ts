@@ -24,7 +24,7 @@ export function isNpub(s: string): s is `npub1${string}` {
   return s.startsWith("npub1");
 }
 
-const reHexPubkey = /^[0-9a-f]{64}$/
+const reHexPubkey = /^[0-9a-f]{64}$/;
 
 export async function fetchNostrProfile(pubkey: string): Promise<NostrProfile> {
   const fetcher = NostrFetcher.init();
@@ -53,14 +53,15 @@ export async function fetchNostrProfile(pubkey: string): Promise<NostrProfile> {
 }
 
 export function parsePubkeyLike(s: string): string {
-  if (s.startsWith("npub1")) {
-    return decode(s as `npub1${string}`).data
+  const s2 = s.startsWith("nostr:") ? s.substring(6) : s;
+  if (s2.startsWith("npub1")) {
+    return decode(s2 as `npub1${string}`).data;
   }
-  if (s.startsWith("nostr:npub1")) {
-    return decode(s.substring(6) as `npub1${string}`).data
+  if (s2.startsWith("nprofile1")) {
+    return decode(s2 as `nprofile1${string}`).data.pubkey;
   }
-  if (reHexPubkey.test(s)) {
-    return s
+  if (reHexPubkey.test(s2)) {
+    return s2;
   }
-  throw new Error("input is not pubkey-like")
+  throw new Error(`input is not pubkey-like: ${s}`);
 }
