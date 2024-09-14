@@ -4,15 +4,20 @@ import { decode } from "nostr-tools/nip19";
 export type NostrProfile = {
   pubkey: string;
   displayName: string;
-  nip05?: string;
+  name?: string;
   pictureUrl: string;
+  nip05?: string;
+  website?: string;
+  lnAddress?: string;
 };
 
 export type Kind0Content = {
   display_name?: string;
   name?: string;
-  nip05?: string;
   picture: string;
+  nip05?: string;
+  website?: string;
+  lud16?: string;
 };
 
 export function isNpub(s: string): s is `npub1${string}` {
@@ -22,7 +27,6 @@ export function isNpub(s: string): s is `npub1${string}` {
 const reHexPubkey = /^[0-9a-f]{64}$/
 
 export async function fetchNostrProfile(pubkey: string): Promise<NostrProfile> {
-  console.log(pubkey)
   const fetcher = NostrFetcher.init();
   try {
     const k0 = await fetcher.fetchLastEvent(
@@ -37,8 +41,11 @@ export async function fetchNostrProfile(pubkey: string): Promise<NostrProfile> {
     return {
       pubkey,
       displayName: parsed.display_name ?? parsed.name ?? "No Name",
-      nip05: parsed.nip05,
+      name: parsed.display_name !== undefined ? parsed.name : undefined,
       pictureUrl: parsed.picture,
+      nip05: parsed.nip05,
+      website: parsed.website,
+      lnAddress: parsed.lud16,
     };
   } finally {
     fetcher.shutdown();

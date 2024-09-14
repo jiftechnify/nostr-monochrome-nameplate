@@ -1,8 +1,9 @@
 .nameplate {
   height: 256px;
+  padding-bottom: 1.5em;
   display: grid;
   grid-template-columns: 256px 1fr;
-  column-gap: 2rem;
+  column-gap: 1.5rem;
 }
 
 .pictureContainer {
@@ -24,12 +25,18 @@
   filter: grayscale(100%);
 }
 
-.profile {
+.profiles {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   text-align: left;
   filter: grayscale(100%);
+}
+
+.names {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
 }
 
 .displayName {
@@ -38,7 +45,23 @@
 }
 
 .name {
-  font-size: 1.2rem;
+  color: #666;
+}
+
+.propContainer {
+  display: grid;
+  height: 1.5rem;
+  grid-template-columns: 1rem 1fr;
+  column-gap: 4px;
+}
+
+.propIcon {
+  max-width: 100%;
+  display: grid;
+}
+
+.propIcon svg {
+  place-self: center;
 }
 
 .npub {

@@ -8,10 +8,17 @@ import {
 import { orderedDither } from "@thi.ng/pixel-dither";
 import { useEffect, useMemo, useRef } from "react";
 
-import styles from "./Nameplate.module.css";
+import {
+  BoltIcon,
+  CheckBadgeIcon,
+  GlobeAltIcon,
+} from "@heroicons/react/16/solid";
 
-import { fetchNostrProfile } from "./nostr";
 import { npubEncode } from "nostr-tools/nip19";
+import * as nip05 from "nostr-tools/nip05";
+import { fetchNostrProfile, NostrProfile } from "./nostr";
+
+import styles from "./Nameplate.module.css";
 
 type NameplateProps = {
   pubkey: string;
@@ -30,17 +37,64 @@ export function Nameplate({ pubkey, gamma }: NameplateProps) {
     return <NameplateFallback />;
   }
 
-  const { displayName, pictureUrl, nip05 } = profile;
   const npub = npubEncode(pubkey);
   return (
     <div className={styles.nameplate}>
-      <NameplatePicture {...{ pictureUrl, pubkey, gamma }} />
-      <div className={styles.profile}>
-        <div className={styles.names}>
-          <p className={styles.displayName}>{displayName}</p>
-          {nip05 && <p className={styles.name}>NIP-05: {nip05}</p>}
-        </div>
+      <NameplatePicture {...{ pictureUrl: profile.pictureUrl, pubkey, gamma }} />
+      <div className={styles.profiles}>
+        <NameplateProfile {...profile} />
         <p className={styles.npub}>{npub}</p>
+      </div>
+    </div>
+  );
+}
+
+function useVerifiedNip05(pubkey: string, nip05Addr: string | undefined) {
+  const { data } = useQuery({
+    queryKey: ["nip05-verification", pubkey],
+    queryFn: async () => {
+      if (nip05Addr === undefined) {
+        return undefined;
+      }
+
+      try {
+        const valid = await nip05.isValid(pubkey, nip05Addr);
+        return valid ? nip05Addr : undefined;
+      } catch (e) {
+        console.error(e);
+        return undefined;
+      }
+    },
+  });
+  return data;
+}
+
+type NameplateProfileProps = Omit<NostrProfile, 'pictureUrl'>;
+
+function NameplateProfile(props: NameplateProfileProps) {
+  const { pubkey, displayName, name, nip05, website, lnAddress } = props;
+  const verifiedNip05 = useVerifiedNip05(pubkey, nip05);
+
+  return (
+    <div>
+      <p className={styles.names}>
+        <span className={styles.displayName}>{displayName}</span>
+        {name && <span className={styles.name}>@{name}</span>}
+      </p>
+      <div>
+        {verifiedNip05 && (
+          <NameplateProperty icon={<CheckBadgeIcon />}>
+            {verifiedNip05}
+          </NameplateProperty>
+        )}
+        {website && (
+          <NameplateProperty icon={<GlobeAltIcon />}>
+            {website}
+          </NameplateProperty>
+        )}
+        {lnAddress && (
+          <NameplateProperty icon={<BoltIcon />}>{lnAddress}</NameplateProperty>
+        )}
       </div>
     </div>
   );
@@ -156,6 +210,21 @@ function drawImageDataToCanvas(canvas: HTMLCanvasElement, imgData: ImageData) {
   canvas.width = imgData.width;
   canvas.height = imgData.height;
   canvas.getContext("2d")?.putImageData(imgData, 0, 0);
+}
+
+function NameplateProperty({
+  icon,
+  children,
+}: {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <p className={styles.propContainer}>
+      <span className={styles.propIcon}>{icon}</span>
+      <span className={styles.propValue}>{children}</span>
+    </p>
+  );
 }
 
 function NameplateFallback() {
