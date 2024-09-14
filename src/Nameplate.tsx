@@ -59,7 +59,10 @@ function useVerifiedNip05(pubkey: string, nip05Addr: string | undefined) {
 
       try {
         const valid = await nip05.isValid(pubkey, nip05Addr);
-        return valid ? nip05Addr : undefined;
+        if (!valid) {
+          return undefined;
+        }
+        return nip05Addr.startsWith("_@") ? nip05Addr.substring(2) : nip05Addr;
       } catch (e) {
         console.error(e);
         return undefined;
