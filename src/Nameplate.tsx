@@ -41,7 +41,7 @@ export function Nameplate({ pubkey, gamma }: NameplateProps) {
   return (
     <div className={styles.nameplate}>
       <NameplatePicture {...{ pictureUrl: profile.pictureUrl, pubkey, gamma }} />
-      <div className={styles.profiles}>
+      <div className={styles.info}>
         <NameplateProfile {...profile} />
         <p className={styles.npub}>{npub}</p>
       </div>
@@ -79,7 +79,7 @@ function NameplateProfile(props: NameplateProfileProps) {
   const verifiedNip05 = useVerifiedNip05(pubkey, nip05);
 
   return (
-    <div>
+    <div className={styles.profile}>
       <p className={styles.names}>
         <span className={styles.displayName}>{displayName}</span>
         {name && <span className={styles.name}>@{name}</span>}
