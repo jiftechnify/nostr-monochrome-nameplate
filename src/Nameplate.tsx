@@ -37,13 +37,11 @@ export function Nameplate({ pubkey, gamma }: NameplateProps) {
     return <NameplateFallback />;
   }
 
-  const npub = npubEncode(pubkey);
   return (
     <div className={styles.nameplate}>
       <NameplatePicture {...{ pictureUrl: profile.pictureUrl, pubkey, gamma }} />
       <div className={styles.info}>
         <NameplateProfile {...profile} />
-        <p className={styles.npub}>{npub}</p>
       </div>
     </div>
   );

@@ -29,7 +29,6 @@
   display: flex;
   width: max-content;
   flex-direction: column;
-  justify-content: space-between;
   text-align: left;
   filter: grayscale(100%);
 }
